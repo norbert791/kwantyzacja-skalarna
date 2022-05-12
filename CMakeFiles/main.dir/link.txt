@@ -1,0 +1,1 @@
+/usr/bin/clang CMakeFiles/main.dir/main.c.o CMakeFiles/main.dir/functions.c.o -o main  libtga-master/src/libtga.a -lm 

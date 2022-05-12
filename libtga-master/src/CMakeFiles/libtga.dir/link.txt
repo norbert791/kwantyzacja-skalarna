@@ -1,0 +1,2 @@
+/usr/bin/llvm-ar qc libtga.a CMakeFiles/libtga.dir/tga.c.o CMakeFiles/libtga.dir/tgaread.c.o CMakeFiles/libtga.dir/tgawrite.c.o
+/usr/bin/llvm-ranlib libtga.a
