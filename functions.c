@@ -3,6 +3,22 @@
 #include <stdlib.h>
 #include "functions.h"
 
+uint32_t cast_red(pixel p) {
+    return p.red;
+}
+
+uint32_t cast_green(pixel p) {
+    return p.green;
+}
+
+uint32_t cast_blue(pixel p) {
+    return p.blue;
+}
+
+uint32_t cast_pixel(pixel p) {
+    return (p.red << 16) + (p.green << 8) + (p.blue);
+}
+
 pixel* scalar_quantization(size_t height, size_t width, pixel matrix[static restrict height][width], uint16_t redBits, uint16_t greenBits, uint16_t blueBits) {
 
     //Initial check
@@ -32,3 +48,31 @@ pixel* scalar_quantization(size_t height, size_t width, pixel matrix[static rest
     }
     return result;
 }
+
+double mean_squere_error(size_t height, size_t width, pixel encoded[static restrict height][width],
+                        pixel original[static restrict height][width], uint32_t (*cast)(pixel)) {
+    double result = 0;
+    for (size_t i = 0; i < height; i++) {
+        for (size_t j = 0; j < width; j++) {
+            double temp = 1.0 * cast(encoded[i][j]) - cast(original[i][j]);
+            result += temp * temp;
+        }
+    }
+    return result / (width * height);
+}
+
+double signal_to_noise_ratio(size_t height, size_t width, pixel original[static restrict height][width],
+                            uint32_t (cast)(pixel), double mse) {
+
+    double result = 0;
+    for (size_t i = 0; i < height; i++) {
+        for (size_t j = 0; j < width; j++) {
+            double temp = cast(original[i][j]);
+            result += temp * temp;
+        }
+    }
+    result /= height * width;
+    return result / mse;
+}
+ 
+
