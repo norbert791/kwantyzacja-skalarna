@@ -3,11 +3,16 @@
 
 #include <inttypes.h>
 
+typedef enum mode {
+    SNR,
+    MSE
+} mode;
+
 typedef struct {
     uint8_t red;
     uint8_t green;
     uint8_t blue;
-} pixel;
+} pixel, optimizedParameters;
 
 pixel* scalar_quantization(size_t height, size_t width,
                             pixel matrix[static restrict height][width], uint16_t redBits,
@@ -24,5 +29,7 @@ uint32_t cast_green(pixel p);
 uint32_t cast_blue(pixel p);
 uint32_t cast_pixel(pixel p);
 
+double estimator(size_t height, size_t width, const pixel picture[restrict static height][width], uint16_t red, uint16_t green, uint16_t blue, mode optiMode);
+optimizedParameters optimize(size_t height, size_t width, const pixel picture[restrict static height][width], int bitsPerPixel, mode optiMode);
 
 #endif

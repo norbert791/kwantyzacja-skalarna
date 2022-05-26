@@ -1,6 +1,7 @@
 #include <tgmath.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <float.h>
 #include "functions.h"
 
 uint32_t cast_red(pixel p) {
@@ -75,4 +76,45 @@ double signal_to_noise_ratio(size_t height, size_t width, pixel original[static 
     return result / mse;
 }
  
+double estimator(size_t height, size_t width, const pixel picture[restrict static height][width], uint16_t red, uint16_t green, uint16_t blue, mode optiMode) {
+    pixel* temp =  scalar_quantization(height, width, picture, red, green, blue);
+    if (temp == NULL) {
+        return DBL_MAX;
+    }
+    double redE = mean_squere_error(height, width, temp, picture, cast_red);
+    double greenE = mean_squere_error(height, width, temp, picture, cast_green);
+    double blueE = mean_squere_error(height, width, temp, picture, cast_blue);
 
+    if (optiMode == SNR) {
+        redE = signal_to_noise_ratio(height, width, picture, cast_red, redE);
+        greenE = signal_to_noise_ratio(height, width, picture, cast_green, greenE);
+        blueE = signal_to_noise_ratio(height, width, picture, cast_blue, blueE);
+    }
+
+    free(temp);
+    return redE + greenE + blueE;
+}
+
+optimizedParameters optimize(size_t height, size_t width, const pixel picture[restrict static height][width], int bitsPerPixel, mode optiMode) {
+    uint8_t red = 9;
+    uint8_t green = 9;
+    uint8_t blue = 9;
+
+    double estimated = DBL_MAX;
+
+    size_t i,j,k;
+    for (i = 0; i <= 8 && i <= bitsPerPixel; i++) {
+        for (j = 0; j <= 8 && i + j <= bitsPerPixel; j++) {
+            k = bitsPerPixel - i - j;
+            double temp = estimator(height, width, picture, i, j, k, optiMode);
+            if (estimated >= temp) {
+                estimated = temp;
+                red = i;
+                green = j;
+                blue = k;
+            }    
+        }
+    }
+    optimizedParameters result = {red, green, blue};
+    return result;   
+}
